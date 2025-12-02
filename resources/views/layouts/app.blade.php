@@ -103,7 +103,7 @@
 
         /* Hero Image Overlay */
         .hero-overlay {
-            background: linear-gradient(90deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 100%);
+            background: linear-gradient(90deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.4) 100%);
         }
     </style>
 </head>
