@@ -1,0 +1,142 @@
+/* --- VARIABLES --- */
+:root {
+    --sport-red: #ff0000;       /* Merah terang menyala */
+    --sport-dark-red: #cc0000;  /* Merah gelap untuk hover */
+    --sport-black: #050505;     /* Hitam pekat background */
+    --sport-gray: #1a1a1a;      /* Abu-abu gelap untuk kartu */
+    --text-main: #ffffff;
+    --text-muted: #b3b3b3;
+}
+
+body {
+    background-color: var(--sport-black);
+    color: var(--text-main);
+    font-family: 'Poppins', sans-serif; /* Pastikan font diload di layout */
+    padding-top: 70px; /* Space untuk navbar fixed */
+}
+
+/* --- COMPONENTS --- */
+
+/* Navbar */
+.navbar {
+    background-color: rgba(5, 5, 5, 0.95) !important;
+    border-bottom: 2px solid var(--sport-red);
+    box-shadow: 0 4px 20px rgba(255, 0, 0, 0.1);
+}
+
+.navbar-brand span {
+    color: var(--sport-red);
+}
+
+/* Tombol Utama (Merah) */
+.btn-sport {
+    background-color: var(--sport-red);
+    color: white;
+    font-weight: 700;
+    border: none;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+}
+
+.btn-sport:hover {
+    background-color: var(--sport-dark-red);
+    box-shadow: 0 0 15px rgba(255, 0, 0, 0.6);
+    transform: scale(1.05);
+    color: white;
+}
+
+/* Tombol Outline (Garis Merah) */
+.btn-outline-sport {
+    background-color: transparent;
+    border: 2px solid var(--sport-red);
+    color: var(--sport-red);
+    font-weight: 700;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-sport:hover {
+    background-color: var(--sport-red);
+    color: white;
+    box-shadow: 0 0 15px rgba(255, 0, 0, 0.6);
+}
+
+/* --- SECTIONS --- */
+
+/* Hero Section */
+.hero-section {
+    background: linear-gradient(135deg, rgba(0,0,0,0.9) 0%, rgba(20,0,0,0.7) 100%), 
+                url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+    background-size: cover;
+    background-position: center;
+    min-height: 90vh;
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.hero-title {
+    font-size: 3.5rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    line-height: 1.1;
+    text-shadow: 2px 2px 10px rgba(0,0,0,0.8);
+}
+
+.text-highlight {
+    color: var(--sport-red);
+}
+
+/* Feature Cards */
+.sport-card {
+    background-color: var(--sport-gray);
+    border: 1px solid #333;
+    border-radius: 10px;
+    padding: 2rem;
+    transition: all 0.3s ease;
+}
+
+.sport-card:hover {
+    border-color: var(--sport-red);
+    transform: translateY(-10px);
+    box-shadow: 0 10px 30px rgba(255, 0, 0, 0.15);
+}
+
+.icon-box {
+    font-size: 3rem;
+    color: var(--sport-red);
+    margin-bottom: 1rem;
+}
+
+/* --- FORMS (LOGIN/REGISTER) --- */
+.card-auth {
+    background-color: var(--sport-gray);
+    border: 1px solid #333;
+    color: white;
+}
+
+.card-auth-header {
+    background-color: var(--sport-red);
+    color: white;
+    border-bottom: none;
+}
+
+/* Input Fields Dark Mode */
+.form-control {
+    background-color: #0f0f0f;
+    border: 1px solid #333;
+    color: white;
+}
+
+.form-control:focus {
+    background-color: #000;
+    border-color: var(--sport-red);
+    color: white;
+    box-shadow: 0 0 0 0.25rem rgba(255, 0, 0, 0.25);
+}
+
+/* Input Placeholder Color */
+.form-control::placeholder {
+    color: #666;
+}
