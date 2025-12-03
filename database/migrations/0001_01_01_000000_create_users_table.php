@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
@@ -17,10 +14,18 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            
+            // --- KOLOM TAMBAHAN (WAJIB ADA DISINI) ---
+            $table->integer('age')->nullable();
+            $table->string('gender')->nullable();
+            $table->string('job')->nullable();
+            // -----------------------------------------
+
             $table->rememberToken();
             $table->timestamps();
         });
 
+        // Tabel bawaan Laravel lainnya (biarkan saja)
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
             $table->string('token');
@@ -37,9 +42,6 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('users');
