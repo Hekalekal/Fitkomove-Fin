@@ -4,39 +4,45 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AuthController;
 
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+*/
+
 // Halaman Depan
 Route::get('/', function () {
     return view('welcome');
 });
 
-// --- MENU UNTUK TAMU (Belum Login) ---
+// --- ROUTE UNTUK TAMU (Belum Login) ---
 Route::middleware('guest')->group(function () {
     // Login
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
 
-    // Register (Pastikan baris ini ada!)
+    // Register
     Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
     Route::post('/register', [AuthController::class, 'register']);
 });
 
-// --- MENU UNTUK MEMBER (Sudah Login) ---
+// --- ROUTE UNTUK MEMBER (Sudah Login) ---
 Route::middleware('auth')->group(function () {
     // Logout
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-
-    // Dashboard
+    
+    // 1. Dashboard Utama
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     
-    // Update Profile
+    // 2. Route Simpan Data (Create)
+    Route::post('/workout/store', [DashboardController::class, 'storeWorkout'])->name('workout.store');
+    Route::post('/nutrition/store', [DashboardController::class, 'storeNutrition'])->name('nutrition.store');
+    Route::post('/progress/store', [DashboardController::class, 'storeProgress'])->name('progress.store');
+    
+    // 3. Route Hapus Data (Delete)
+    // Kita pakai parameter {type} dan {id} agar dinamis
+    Route::delete('/delete/{type}/{id}', [DashboardController::class, 'destroyEntity'])->name('entity.destroy');
+    
+    // 4. Route Update Profile (Put)
     Route::put('/profile/update', [DashboardController::class, 'updateProfile'])->name('profile.update');
-});
-
-// ... kode lainnya ...
-Route::middleware('auth')->group(function () {
-    // Route ini yang dipanggil tombol logout
-    Route::post('/logout', [App\Http\Controllers\AuthController::class, 'logout'])->name('logout');
-
-    Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
-    Route::put('/profile/update', [App\Http\Controllers\DashboardController::class, 'updateProfile'])->name('profile.update');
 });

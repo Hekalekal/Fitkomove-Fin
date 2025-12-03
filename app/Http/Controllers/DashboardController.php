@@ -4,62 +4,148 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\User; // PENTING: Import Model User agar dikenali
+use Carbon\Carbon;
+
+// PENTING: Import semua Model yang sudah kita buat
+use App\Models\User;
+use App\Models\Workout;
+use App\Models\Nutrition;
+use App\Models\ProgressLog;
 
 class DashboardController extends Controller
 {
     /**
-     * Menampilkan Halaman Dashboard
+     * Menampilkan Halaman Dashboard dengan Semua Data
      */
     public function index()
     {
-        // Ambil data user yang sedang login
+        /** @var \App\Models\User $user */
         $user = Auth::user();
+        $today = Carbon::today();
+
+        // 1. Ambil Data Latihan & Makan HARI INI
+        $todaysWorkouts = $user->workouts()->whereDate('date', $today)->get();
+        $todaysNutrition = $user->nutritions()->whereDate('date', $today)->get();
         
-        // Dummy Data Jadwal (Bisa diganti dengan data dari database nanti)
-        $schedules = [
-            ['time' => '08:00', 'activity' => 'Lari Pagi', 'status' => 'Selesai'],
-            ['time' => '17:00', 'activity' => 'Gym Session', 'status' => 'Pending'],
-        ];
+        // 2. Hitung Total Kalori (Masuk vs Keluar)
+        $totalCaloriesIn = $todaysNutrition->sum('calories');
+        $totalCaloriesOut = $todaysWorkouts->sum('calories');
 
-        // Dummy Data Rekomendasi
-        $recommendations = [
-            ['title' => 'Cardio Blast', 'level' => 'Hard', 'duration' => '30 Min'],
-            ['title' => 'Yoga Flow', 'level' => 'Easy', 'duration' => '45 Min'],
-            ['title' => 'Strength Training', 'level' => 'Medium', 'duration' => '60 Min'],
-        ];
+        // 3. Ambil Data Progress (7 Hari Terakhir) untuk Grafik
+        $progressRaw = $user->progressLogs()
+                             ->orderBy('date', 'asc')
+                             ->take(7)
+                             ->get();
 
-        // Kirim semua variabel ke view dashboard
-        return view('dashboard', compact('user', 'schedules', 'recommendations'));
+        // Siapkan Data untuk Grafik Chart.js
+        // Kita format tanggalnya agar rapi (contoh: "12 Dec")
+        $chartLabels = $progressRaw->map(function ($log) {
+            return Carbon::parse($log->date)->format('d M');
+        })->toArray();
+
+        $chartData = $progressRaw->pluck('weight')->toArray();
+
+        return view('dashboard', compact(
+            'user', 
+            'todaysWorkouts', 
+            'todaysNutrition', 
+            'totalCaloriesIn', 
+            'totalCaloriesOut', 
+            'progressRaw',
+            'chartLabels',
+            'chartData'
+        ));
     }
 
-    /**
-     * Memproses Update Profile
-     */
-    public function updateProfile(Request $request)
+    // --- LOGIKA MENYIMPAN DATA (CREATE) ---
+
+    public function storeWorkout(Request $request)
     {
-        // 1. Validasi Input agar sesuai aturan database
+        // Validasi input sederhana
         $request->validate([
-            'name' => 'required|string|max:255',
-            'age' => 'nullable|integer',
-            'gender' => 'nullable|string',
-            'job' => 'nullable|string',
+            'activity' => 'required',
+            'duration' => 'required|integer',
+            'calories' => 'required|integer'
         ]);
 
-        // 2. Ambil User yang sedang login
-        /** @var \App\Models\User $user */ // Baris ini memberitahu VS Code bahwa ini adalah Model User
+        Workout::create([
+            'user_id' => Auth::id(),
+            'activity' => $request->activity,
+            'duration' => $request->duration,
+            'calories' => $request->calories,
+            'date' => $request->date ?? Carbon::today(),
+        ]);
+
+        return back()->with('success', 'Latihan berhasil dicatat! Semangat 🔥');
+    }
+
+    public function storeNutrition(Request $request)
+    {
+        $request->validate([
+            'food_name' => 'required',
+            'calories' => 'required|integer'
+        ]);
+
+        Nutrition::create([
+            'user_id' => Auth::id(),
+            'food_name' => $request->food_name,
+            'calories' => $request->calories,
+            'meal_type' => $request->meal_type,
+            'date' => $request->date ?? Carbon::today(),
+        ]);
+
+        return back()->with('success', 'Makanan berhasil dicatat! Jaga nutrisimu 🥗');
+    }
+
+    public function storeProgress(Request $request)
+    {
+        $request->validate([
+            'weight' => 'required|numeric',
+            'date' => 'required|date'
+        ]);
+
+        ProgressLog::create([
+            'user_id' => Auth::id(),
+            'weight' => $request->weight,
+            'waist' => $request->waist,
+            'date' => $request->date,
+        ]);
+
+        return back()->with('success', 'Progress tubuh berhasil diupdate! 📈');
+    }
+
+    // --- LOGIKA MENGHAPUS DATA (DELETE) ---
+    
+    public function destroyEntity($type, $id)
+    {
+        // Cek tipe data apa yang mau dihapus
+        if ($type == 'workout') {
+            Workout::where('id', $id)->where('user_id', Auth::id())->delete();
+        }
+        
+        if ($type == 'nutrition') {
+            Nutrition::where('id', $id)->where('user_id', Auth::id())->delete();
+        }
+        
+        return back()->with('success', 'Data berhasil dihapus.');
+    }
+
+    // --- UPDATE PROFILE ---
+
+    public function updateProfile(Request $request)
+    {
+        /** @var \App\Models\User $user */
         $user = Auth::user();
         
-        // 3. Update data ke database
         $user->update([
             'name' => $request->name,
             'age' => $request->age,
             'gender' => $request->gender,
             'job' => $request->job,
+            'target_weight' => $request->target_weight,
+            'fitness_goal' => $request->fitness_goal,
         ]);
-
-        // 4. Redirect kembali ke dashboard dengan Pesan Sukses
-        // Pesan 'success' ini yang akan ditangkap oleh View dashboard.blade.php
-        return redirect()->route('dashboard')->with('success', 'Profil berhasil diperbarui!');
+        
+        return back()->with('success', 'Profil berhasil diperbarui!');
     }
 }

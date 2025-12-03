@@ -1,1 +1,0 @@
-class Workout extends Model { protected $guarded = []; }
